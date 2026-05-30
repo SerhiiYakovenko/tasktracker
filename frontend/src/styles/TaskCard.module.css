@@ -1,0 +1,95 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.priority {
+  flex-shrink: 0;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+
+.priority_low {
+  background-color: var(--color-priority-low);
+}
+
+.priority_medium {
+  background-color: var(--color-priority-medium);
+}
+
+.priority_high {
+  background-color: var(--color-priority-high);
+}
+
+.description {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.meta {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.due {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.moveButton,
+.deleteButton {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  font-size: 0.75rem;
+  color: var(--color-text);
+}
+
+.moveButton:hover {
+  background-color: var(--color-bg);
+  border-color: var(--color-primary);
+}
+
+.deleteButton {
+  margin-left: auto;
+  color: var(--color-danger);
+}
+
+.deleteButton:hover {
+  background-color: var(--color-bg);
+  border-color: var(--color-danger);
+}
