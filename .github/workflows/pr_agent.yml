@@ -1,0 +1,28 @@
+# .github/workflows/pr_agent.yml
+name: PR Agent
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issue_comment:
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
+jobs:
+  pr_agent_job:
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    name: Run PR Agent
+    steps:
+      - name: PR Agent
+        uses: the-pr-agent/pr-agent@main        # latest. To pin: the-pr-agent/pr-agent@v0.35.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                  # auto-provided by Actions
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}                      # OpenAI is PR-Agent's default provider — nothing else needed
+          config.reasoning_effort: "low"                            # GPT-5.x reasoning model: "low" keeps the findings, ~2–3× faster (verified)
+          github_action_config.auto_review: "true"      
+          github_action_config.auto_describe: "true"
+          github_action_config.auto_improve: "false"
