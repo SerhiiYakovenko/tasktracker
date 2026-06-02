@@ -25,4 +25,4 @@ jobs:
           config.reasoning_effort: "low"                            # GPT-5.x reasoning model: "low" keeps the findings, ~2–3× faster (verified)
           github_action_config.auto_review: "true"      
           github_action_config.auto_describe: "true"
-          github_action_config.auto_improve: "false"
+          github_action_config.auto_improve: "true"
