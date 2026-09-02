@@ -1,6 +1,6 @@
 # TaskTracker
 
-A production-shaped task and project management board: the demo app for AI code review sessions, first the TechLeadConf 2026 workshop and now the O'Reilly live course *AI Code Review in Production*.
+A production-shaped task and project management board: the demo app for AI code review sessions.
 
 TaskTracker pairs a typed FastAPI backend with a React + TypeScript single-page app. Organise work into projects, track tasks across a `todo → in_progress → done` board, set priorities, assignees and due dates, and secure everything behind JWT authentication. It runs on SQLite out of the box and is ready for Postgres in production. The `demo/add-search` branch includes intentional review findings for the sessions' AI reviewer.
 
