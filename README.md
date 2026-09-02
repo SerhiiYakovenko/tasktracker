@@ -1,8 +1,8 @@
 # TaskTracker
 
-A production-shaped task and project management board — the hands-on demo app for the TechLeadConf 2026 workshop on AI-powered code review.
+A production-shaped task and project management board: the demo app for AI code review sessions, first the TechLeadConf 2026 workshop and now the O'Reilly live course *AI Code Review in Production*.
 
-TaskTracker pairs a typed FastAPI backend with a React + TypeScript single-page app. Organise work into projects, track tasks across a `todo → in_progress → done` board, set priorities, assignees and due dates, and secure everything behind JWT authentication. It runs on SQLite out of the box and is ready for Postgres in production. The `demo/add-search` branch includes intentional review findings for the workshop's AI reviewer.
+TaskTracker pairs a typed FastAPI backend with a React + TypeScript single-page app. Organise work into projects, track tasks across a `todo → in_progress → done` board, set priorities, assignees and due dates, and secure everything behind JWT authentication. It runs on SQLite out of the box and is ready for Postgres in production. The `demo/add-search` branch includes intentional review findings for the sessions' AI reviewer.
 
 ## Features
 
@@ -73,11 +73,56 @@ To build for production:
 npm run build && npm run preview
 ```
 
-## The workshop
+## Where this repo is used
 
-This repo is **Part A** of the *AI-Powered Code Review* hands-on workshop at TechLeadConf 2026. Part A demonstrates how to add AI-powered code review to your GitHub workflow using an off-the-shelf GitHub Marketplace Action ([Qodo PR-Agent](https://github.com/qodo-ai/pr-agent)).
+### O'Reilly live course: AI Code Review in Production
 
-### Part A: Marketplace Action
+During the course you read the pull request on the `demo/add-search` branch and post what you find; then the reviewer, [PR-Agent](https://github.com/qodo-ai/pr-agent) running as a GitHub Action, is wired into this repository live with one workflow file and one secret, and its findings are compared with the room's. Nothing to install during the session.
+
+**Homework: run the same reviewer on your own pull request.**
+
+1. Fork this repository (or use any repository you own).
+2. Create `.github/workflows/pr_agent.yml` with the workflow below.
+3. Add one repository secret named `OPENAI_KEY` (Settings, Secrets and variables, Actions). The account needs billing enabled; a review costs cents.
+4. Open a pull request, or mark a draft as ready for review. The Action posts `/describe` and `/review` comments in about a minute.
+5. Type `/improve` or `/ask "your question"` as a PR comment for more. To teach it a rule, add an env line such as `pr_reviewer.extra_instructions: "Flag any hardcoded credential or token constant."` and comment `/review` again.
+
+```yaml
+# .github/workflows/pr_agent.yml
+name: PR Agent
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issue_comment:
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
+jobs:
+  pr_agent_job:
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    name: Run PR Agent
+    steps:
+      - name: PR Agent
+        uses: the-pr-agent/pr-agent@v0.35.0     # pinned release. Re-verify latest tag at re-arm time
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                  # auto-provided by Actions
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}                      # OpenAI is PR-Agent default provider, nothing else needed
+          config.reasoning_effort: "low"                            # "low" keeps the findings and is 2 to 3x faster (verified)
+          github_action_config.auto_review: "true"      
+          github_action_config.auto_describe: "true"
+          github_action_config.auto_improve: "false"
+```
+
+Two gotchas from the session: the boolean toggles must be quoted strings, and the auto tools fire on `opened`, `reopened`, and `ready_for_review` only.
+
+### TechLeadConf 2026 workshop: Part A, Marketplace Action
+
+This repo was **Part A** of the *AI-Powered Code Review* hands-on workshop at TechLeadConf 2026 (recorded on GitNation). Part A demonstrates how to add AI-powered code review to your GitHub workflow using an off-the-shelf GitHub Marketplace Action ([Qodo PR-Agent](https://github.com/qodo-ai/pr-agent)).
 
 When you open or update a pull request on the `main` branch, the PR-Agent Action runs automatically via GitHub Actions. It analyzes the diff and posts inline review comments with findings, suggestions, and quality improvements — all without needing to host your own server.
 
@@ -90,9 +135,9 @@ To see the Action in action:
 3. Watch the PR-Agent Action run in the **Checks** tab.
 4. Review the inline comments posted by the AI reviewer.
 
-### Part B: Self-hosted
+### When you outgrow the Action: self-hosted (workshop Part B)
 
-The companion repo, **tasktracker-selfhosted**, shows Part B: running a fork of PR-Agent as a self-hosted GitHub App with custom review logic and slash commands (e.g., `/check_standards`). Part B is for teams who want full control over their AI reviewer, custom integrations, and on-premise deployment.
+The companion repo, [tasktracker-selfhosted](https://github.com/SerhiiYakovenko/tasktracker-selfhosted), shows the next step: running a fork of PR-Agent as a self-hosted GitHub App with custom review logic and slash commands (e.g., `/check_standards`). It was Part B of the workshop and is the follow-up path recommended at the end of the O'Reilly course, for teams who want full control over their AI reviewer, custom integrations, and on-premise deployment.
 
 ## Project structure
 
@@ -179,4 +224,4 @@ MIT.
 
 ---
 
-**Workshop:** [TechLeadConf 2026 — AI-Powered Code Review](https://techleadconf.com/#workshop-ai-powered-code-review) | Recorded on GitNation | [Part B: Self-hosted](https://github.com/SerhiiYakovenko/tasktracker-selfhosted)
+**Used in:** [TechLeadConf 2026 workshop: AI-Powered Code Review](https://techleadconf.com/#workshop-ai-powered-code-review) (recorded on GitNation) | O'Reilly live course: *AI Code Review in Production* | [Self-hosted companion repo](https://github.com/SerhiiYakovenko/tasktracker-selfhosted)
