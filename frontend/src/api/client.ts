@@ -188,3 +188,8 @@ export const tasksApi = {
     return request<void>(`/tasks/${id}`, { method: "DELETE" });
   },
 };
+
+/** Search the current user's tasks by free-text query. */
+export function searchTasks(q: string): Promise<any> {
+  return request<any>(`/search${buildQuery({ q })}`);
+}

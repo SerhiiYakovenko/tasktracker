@@ -5,6 +5,7 @@
 import { useEffect, useState, type JSX } from "react";
 
 import Header from "../components/Header";
+import SearchBar from "../components/SearchBar";
 import TaskBoard from "../components/TaskBoard";
 import TaskForm from "../components/TaskForm";
 import { useAuth } from "../hooks/authContext";
@@ -50,6 +51,13 @@ export default function BoardPage(): JSX.Element {
     });
   };
 
+  const handleSearchSelect = (taskId: number): void => {
+    const card = document.querySelector(`[data-testid="task-${taskId}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
   if (!user) {
     return <div className={styles.state}>Loading…</div>;
   }
@@ -79,6 +87,8 @@ export default function BoardPage(): JSX.Element {
               ))}
             </select>
           </label>
+
+          <SearchBar onSelect={handleSearchSelect} />
         </div>
 
         {projectsError !== null && (
