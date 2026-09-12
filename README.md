@@ -1,8 +1,67 @@
 # TaskTracker
 
-A production-shaped task and project management board: the demo app for AI code review sessions.
+The demo application for the O'Reilly live course **AI Code Review in Production**: a production-shaped task and project management board with a real CI pipeline, and one pull request that carries ten deliberately planted review findings.
 
-TaskTracker pairs a typed FastAPI backend with a React + TypeScript single-page app. Organise work into projects, track tasks across a `todo → in_progress → done` board, set priorities, assignees and due dates, and secure everything behind JWT authentication. It runs on SQLite out of the box and is ready for Postgres in production. The `demo/add-search` branch includes intentional review findings for the sessions' AI reviewer.
+TaskTracker pairs a typed FastAPI backend with a React + TypeScript single-page app. Organise work into projects, track tasks across a `todo → in_progress → done` board, set priorities, assignees and due dates, and secure everything behind JWT authentication. It runs on SQLite out of the box and is ready for Postgres in production.
+
+## The course
+
+During the live course you do three things with this repository, all from the browser:
+
+1. **Review the prepared pull request** on the `demo/add-search` branch the way you would on a Monday morning, and post what you find. The branch adds task search and filtering and includes intentional review-worthy code, architectural choices and a testing gap.
+2. **Watch the reviewer get wired in live.** [PR-Agent](https://github.com/the-pr-agent/pr-agent), running as a GitHub Action, is added to this repository with one workflow file and one secret, and its findings are compared with the room's.
+3. **Write one review rule** for that pull request, and see one rule from the room run live.
+
+Nothing to install during the session. Running the same reviewer on your own code is the homework below.
+
+## Homework: run the reviewer on your own pull request
+
+1. Fork this repository, or use any repository you own.
+2. Create `.github/workflows/pr_agent.yml` with the workflow below.
+3. Add one repository secret named `OPENAI_KEY` (Settings, then Secrets and variables, then Actions). The account needs billing enabled; a review costs cents.
+4. Open a pull request. The Action posts `/describe` and `/review` comments in about a minute.
+5. Type `/improve` or `/ask "your question"` as a PR comment for more. To teach it a rule, add an env line such as `pr_reviewer.extra_instructions: "Flag any hardcoded credential or token constant."` and comment `/review` again.
+
+```yaml
+# .github/workflows/pr_agent.yml
+name: PR Agent
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issue_comment:
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
+jobs:
+  pr_agent_job:
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    name: Run PR Agent
+    steps:
+      - name: PR Agent
+        uses: the-pr-agent/pr-agent@v0.45.0     # pin a release; check for newer
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      # auto-provided by Actions
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}          # OpenAI is the default provider
+          config.reasoning_effort: "low"                 # keeps the findings, 2 to 3x faster
+          github_action_config.auto_review: "true"
+          github_action_config.auto_describe: "true"
+          github_action_config.auto_improve: "false"
+```
+
+Three gotchas, all learned the hard way:
+
+- The boolean toggles must be quoted strings. Unquoted, they fail silently.
+- The automatic tools fire on `opened`, `reopened` and `ready_for_review`. For a pull request that already existed **before** you added the workflow, GitHub evaluates the run against a merge commit that predates the workflow, so none of those events will start it. Click **Update branch** on the pull request first (or push any commit to it), then mark it ready for review. Or skip the automatic path and comment `/review`, which always runs the workflow from your default branch.
+- Slash commands (`/review`, `/improve`, `/ask`) use the workflow on your default branch, so a rule you add to the workflow on `main` applies to every open pull request on the next command, with no rebase.
+
+## When you outgrow the Action
+
+The companion repository, [tasktracker-selfhosted](https://github.com/SerhiiYakovenko/tasktracker-selfhosted), is the same application reviewed by a self-hosted fork of PR-Agent running as a GitHub App, with custom review logic and slash commands such as `/check_standards`. It is the follow-up path the course ends on, for teams who want their own model, their own data boundary and their own rules engine.
 
 ## Features
 
@@ -73,72 +132,6 @@ To build for production:
 npm run build && npm run preview
 ```
 
-## Where this repo is used
-
-### O'Reilly live course: AI Code Review in Production
-
-During the course you read the pull request on the `demo/add-search` branch and post what you find; then the reviewer, [PR-Agent](https://github.com/qodo-ai/pr-agent) running as a GitHub Action, is wired into this repository live with one workflow file and one secret, and its findings are compared with the room's. Nothing to install during the session.
-
-**Homework: run the same reviewer on your own pull request.**
-
-1. Fork this repository (or use any repository you own).
-2. Create `.github/workflows/pr_agent.yml` with the workflow below.
-3. Add one repository secret named `OPENAI_KEY` (Settings, Secrets and variables, Actions). The account needs billing enabled; a review costs cents.
-4. Open a pull request, or mark a draft as ready for review. The Action posts `/describe` and `/review` comments in about a minute.
-5. Type `/improve` or `/ask "your question"` as a PR comment for more. To teach it a rule, add an env line such as `pr_reviewer.extra_instructions: "Flag any hardcoded credential or token constant."` and comment `/review` again.
-
-```yaml
-# .github/workflows/pr_agent.yml
-name: PR Agent
-
-on:
-  pull_request:
-    types: [opened, reopened, ready_for_review]
-  issue_comment:
-
-permissions:
-  issues: write
-  pull-requests: write
-  contents: write
-
-jobs:
-  pr_agent_job:
-    if: ${{ github.event.sender.type != 'Bot' }}
-    runs-on: ubuntu-latest
-    name: Run PR Agent
-    steps:
-      - name: PR Agent
-        uses: the-pr-agent/pr-agent@v0.35.0     # pinned release. Re-verify latest tag at re-arm time
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                  # auto-provided by Actions
-          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}                      # OpenAI is PR-Agent default provider, nothing else needed
-          config.reasoning_effort: "low"                            # "low" keeps the findings and is 2 to 3x faster (verified)
-          github_action_config.auto_review: "true"      
-          github_action_config.auto_describe: "true"
-          github_action_config.auto_improve: "false"
-```
-
-Two gotchas from the session: the boolean toggles must be quoted strings, and the auto tools fire on `opened`, `reopened`, and `ready_for_review` only.
-
-### TechLeadConf 2026 workshop: Part A, Marketplace Action
-
-This repo was **Part A** of the *AI-Powered Code Review* hands-on workshop at TechLeadConf 2026 (recorded on GitNation). Part A demonstrates how to add AI-powered code review to your GitHub workflow using an off-the-shelf GitHub Marketplace Action ([Qodo PR-Agent](https://github.com/qodo-ai/pr-agent)).
-
-When you open or update a pull request on the `main` branch, the PR-Agent Action runs automatically via GitHub Actions. It analyzes the diff and posts inline review comments with findings, suggestions, and quality improvements — all without needing to host your own server.
-
-**Review target:** Check the `demo/add-search` branch. This branch adds task search and filtering to the TaskTracker board and intentionally includes review-worthy code patterns, architectural choices, and testing gaps. It is a teaching artifact designed to show what an AI reviewer catches.
-
-To see the Action in action:
-
-1. Examine the code on the `demo/add-search` branch.
-2. Open a pull request from `demo/add-search` into `main`.
-3. Watch the PR-Agent Action run in the **Checks** tab.
-4. Review the inline comments posted by the AI reviewer.
-
-### When you outgrow the Action: self-hosted (workshop Part B)
-
-The companion repo, [tasktracker-selfhosted](https://github.com/SerhiiYakovenko/tasktracker-selfhosted), shows the next step: running a fork of PR-Agent as a self-hosted GitHub App with custom review logic and slash commands (e.g., `/check_standards`). It was Part B of the workshop and is the follow-up path recommended at the end of the O'Reilly course, for teams who want full control over their AI reviewer, custom integrations, and on-premise deployment.
-
 ## Project structure
 
 ```
@@ -204,7 +197,7 @@ Full spec at `/docs` when backend is running.
 **Backend:** `cd backend && ruff check . && pytest`  
 **Frontend:** `cd frontend && npm run lint && npm run build && npm run test`
 
-CI runs all checks on every push and PR (`.github/workflows/ci.yml`).
+CI runs all checks on every push and PR (`.github/workflows/ci.yml`). CI is red on the `demo/add-search` branch by design: three of the ten planted findings are the kind a linter catches.
 
 ## Configuration
 
@@ -224,4 +217,4 @@ MIT.
 
 ---
 
-**Used in:** [TechLeadConf 2026 workshop: AI-Powered Code Review](https://techleadconf.com/#workshop-ai-powered-code-review) (recorded on GitNation) | O'Reilly live course: *AI Code Review in Production* | [Self-hosted companion repo](https://github.com/SerhiiYakovenko/tasktracker-selfhosted)
+Built for the O'Reilly live course *AI Code Review in Production* (November 2026). The application and its planted pull request were first used in a hands-on workshop at TechLeadConf 2026.
