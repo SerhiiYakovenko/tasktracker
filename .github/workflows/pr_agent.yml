@@ -22,7 +22,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                  # auto-provided by Actions
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}                      # OpenAI is PR-Agent default provider, nothing else needed
-          config.reasoning_effort: "low"                            # "low" keeps the findings and is 2 to 3x faster (verified)
+          config.reasoning_effort: "low"
+          pr_reviewer.extra_instructions: "Flag any FastAPI router whose tags are not uppercase; the API convention here is uppercase tags."                            # "low" keeps the findings and is 2 to 3x faster (verified)
           github_action_config.auto_review: "true"      
           github_action_config.auto_describe: "true"
           github_action_config.auto_improve: "false"
