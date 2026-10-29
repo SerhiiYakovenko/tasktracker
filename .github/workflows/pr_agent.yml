@@ -26,4 +26,4 @@ jobs:
           github_action_config.auto_review: "true"      
           github_action_config.auto_describe: "true"
           github_action_config.auto_improve: "false"
-          pr_reviewer.extra_instructions: "Every new API endpoint must ship with a test that calls it; flag any new route without one."
+          pr_reviewer.extra_instructions: "Every new API endpoint must ship with a test that calls it; flag any new route without one. Flag any hardcoded credential or token constant, including values that look like live API keys."
