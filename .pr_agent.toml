@@ -1,0 +1,3 @@
+# .pr_agent.toml  (rung two: a rule the team owns, in the repository, reviewed like code)
+[pr_code_suggestions]
+extra_instructions = "Every new API endpoint must ship with a test that calls it. If one is missing, make the missing test a suggestion and name the route."
