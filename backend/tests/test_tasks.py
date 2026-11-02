@@ -319,3 +319,26 @@ def test_cannot_access_other_users_task(
         == 404
     )
     assert client.delete(task_url, headers=intruder).status_code == 404
+
+
+def test_duplicate_task_copies_fields_into_todo(
+    client: TestClient, auth_headers: dict[str, str], project_id: int
+) -> None:
+    source = _create_task(
+        client,
+        auth_headers,
+        project_id,
+        title="Ship it",
+        status="in_progress",
+        priority="high",
+    )
+    resp = client.post(
+        f"/api/v1/tasks/{source['id']}/duplicate", headers=auth_headers
+    )
+    assert resp.status_code == 201, resp.text
+    body = resp.json()
+    assert body["id"] != source["id"]
+    assert body["title"] == "Ship it"
+    assert body["status"] == "todo"
+    assert body["priority"] == "high"
+    assert body["project_id"] == project_id

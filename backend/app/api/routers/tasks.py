@@ -99,6 +99,20 @@ def delete_task(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+@router.post(
+    "/{task_id}/duplicate",
+    response_model=TaskOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Duplicate a task",
+)
+def duplicate_task(
+    task_id: int, db: DBSession, current_user: CurrentUser
+) -> TaskOut:
+    """Create a copy of a task in the same project."""
+    task = task_service.duplicate_task(db, task_id, current_user)
+    return TaskOut.model_validate(task)
+
+
 @router.post("/{task_id}/move", response_model=TaskOut, summary="Move a task")
 def move_task(
     task_id: int,

@@ -145,6 +145,27 @@ def move_task(db: Session, task_id: int, new_status: TaskStatus, owner: User) ->
     return task
 
 
+def duplicate_task(db: Session, task_id: int, owner: User) -> Task:
+    """Copy a task into the same project, back in the first board column."""
+    source = db.get(Task, task_id)
+    if source is None:
+        raise _not_found()
+    copy = Task(
+        title=source.title,
+        description=source.description,
+        status=TaskStatus.TODO,
+        priority=source.priority,
+        project_id=source.project_id,
+        assignee_id=source.assignee_id,
+        due_date=source.due_date,
+    )
+    db.add(copy)
+    db.commit()
+    db.refresh(copy)
+    logger.info("Duplicated task id=%s as id=%s", task_id, copy.id)
+    return copy
+
+
 def delete_task(db: Session, task_id: int, owner: User) -> None:
     """Delete an owned task."""
     task = get_owned_task(db, task_id, owner)
