@@ -1,0 +1,7 @@
+# One eval case: one incident, one expected finding, one grader.
+- id: live-token-in-a-service-file
+  incident: a live-looking token merged to production
+  diff: backend/**/*service*.py
+  expect: the review flags the tk_live_ constant
+  grader: string_match   # "tk_live_" in the review text
+  runs: 3                # pass three in a row before you trust it
