@@ -319,3 +319,22 @@ def test_cannot_access_other_users_task(
         == 404
     )
     assert client.delete(task_url, headers=intruder).status_code == 404
+
+
+def test_filter_tasks_by_due_date(
+    client: TestClient, auth_headers: dict[str, str], project_id: int
+) -> None:
+    _create_task(
+        client, auth_headers, project_id, title="Soon", due_date="2030-01-01T12:00:00Z"
+    )
+    _create_task(
+        client, auth_headers, project_id, title="Later", due_date="2031-01-01T12:00:00Z"
+    )
+    _create_task(client, auth_headers, project_id, title="No date")
+    resp = client.get(
+        "/api/v1/tasks",
+        params={"project_id": project_id, "due_by": "2030-06-01T00:00:00Z"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert [task["title"] for task in resp.json()["items"]] == ["Soon"]

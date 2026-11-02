@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Query, Response, status
@@ -27,13 +28,14 @@ def list_tasks(
     project_id: Annotated[int | None, Query()] = None,
     status_filter: Annotated[TaskStatus | None, Query(alias="status")] = None,
     assignee_id: Annotated[int | None, Query()] = None,
+    due_by: Annotated[datetime | None, Query()] = None,
     page: Annotated[int, Query(ge=1)] = 1,
     size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> TaskList:
     """Return a paginated list of tasks the current user can see.
 
-    Filters (``project_id``, ``status``, ``assignee_id``) are optional and
-    combine with AND semantics.
+    Filters (``project_id``, ``status``, ``assignee_id``, ``due_by``) are
+    optional and combine with AND semantics.
     """
     items, total = task_service.list_tasks(
         db,
@@ -41,6 +43,7 @@ def list_tasks(
         project_id=project_id,
         status_filter=status_filter,
         assignee_id=assignee_id,
+        due_by=due_by,
         page=page,
         size=size,
     )

@@ -8,6 +8,8 @@ offset/limit pagination.
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
@@ -70,6 +72,7 @@ def list_tasks(
     project_id: int | None = None,
     status_filter: TaskStatus | None = None,
     assignee_id: int | None = None,
+    due_by: datetime | None = None,
     page: int = 1,
     size: int = 20,
 ) -> tuple[list[Task], int]:
@@ -85,6 +88,8 @@ def list_tasks(
         base = base.where(Task.status == status_filter)
     if assignee_id is not None:
         base = base.where(Task.assignee_id == assignee_id)
+    if due_by is not None:
+        base = base.where(Task.due_date <= due_by)
 
     count_stmt = select(func.count()).select_from(base.subquery())
     total = db.execute(count_stmt).scalar_one()
