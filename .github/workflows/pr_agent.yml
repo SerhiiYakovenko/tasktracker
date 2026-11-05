@@ -27,4 +27,4 @@ jobs:
           github_action_config.auto_describe: "true"
           github_action_config.auto_improve: "false"
           pr_reviewer.extra_instructions: "<rule one>. Flag any hardcoded credential or token constant, including values that look like live API keys."
-          ask.extra_instructions: "In the end of the message always add Hello from Serhii"
+          pr_questions.extra_instructions: "In the end of the message always add Hello from Serhii"
