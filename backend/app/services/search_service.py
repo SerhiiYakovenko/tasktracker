@@ -44,7 +44,13 @@ def _build_snippet(text_value, query):
     end = idx + len(query) + SNIPPET_RADIUS
     snippet = text_value[start:end]
     # Wrap the matched term so the frontend can render it in bold.
-    return snippet.replace(query, f"<mark>{query}</mark>")
+    from html import escape
+
+    escaped_snippet = escape(snippet)
+    escaped_query = escape(query)
+    return escaped_snippet.replace(
+        escaped_query, f"<mark>{escaped_query}</mark>"
+    )
 
 
 def search_tasks(
