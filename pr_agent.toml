@@ -1,0 +1,3 @@
+# .pr_agent.toml  (rung two: a rule the team owns, in the repository, reviewed like code)
+[pr_code_suggestions]
+extra_instructions = "Flag any hardcoded credential or token constant, and suggest reading it from an environment variable."
