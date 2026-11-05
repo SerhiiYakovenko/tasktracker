@@ -1,0 +1,99 @@
+# Review evals: what the reviewer should say about known pull requests.
+#
+# Add a case when a real review misses something. Add a variant when you want
+# to measure a setting before you adopt it.
+
+runs: 3           # independent reviews, per variant, per pull request
+
+settings:         # applied to every variant
+  - --config.reasoning_effort=low
+
+variants:
+  - name: defaults
+    args: []
+  - name: max findings 10
+    args:
+      - --pr_reviewer.num_max_findings=10
+
+# Test pull requests, found by branch. They are only read, never commented on,
+# and they can be closed.
+pull_requests:
+  - branch: demo/add-search
+    about: a search feature with ten known issues
+    cases:
+      - id: live-token
+        incident: a live-looking token merged to production
+        expect: flag the hardcoded token constant
+        grader: string_match
+        match: [tk_live_, ADMIN_BYPASS, credential]
+
+      - id: sql-injection
+        incident: a lookup built its SQL by string interpolation
+        expect: flag the injection and ask for bound parameters
+        grader: string_match
+        match: [sql injection, interpolat, parameteriz]
+
+      - id: unsafe-html
+        incident: task content rendered as raw HTML
+        expect: flag the XSS through dangerouslySetInnerHTML
+        grader: string_match
+        match: [xss, dangerouslySetInnerHTML, unsafe html, html injection, script injection]
+
+      - id: missing-tests
+        incident: a new endpoint shipped with no test
+        expect: say the pull request has no relevant tests
+        grader: string_match
+        match: [no relevant tests]
+
+      - id: bare-except
+        incident: a bare except hid a real database failure
+        expect: flag the bare except
+        grader: string_match
+        match: [bare except, "bare `except", swallow]
+
+      - id: in-memory-search
+        incident: search loaded every task into Python and slowed down at scale
+        expect: flag the in-memory scan
+        grader: string_match
+        match: [in-memory, in memory, "o(n)", every task, all tasks, loads all]
+
+      - id: no-debounce
+        incident: the search box sent one request per keystroke
+        expect: ask for a debounce
+        grader: string_match
+        match: [debounce, every keystroke, each keystroke]
+
+      - id: any-types
+        incident: any types hid a shape change in the API response
+        expect: flag the any types
+        grader: string_match
+        match: [no-explicit-any, "`any`", any type, typed as any]
+
+      - id: list-key
+        incident: a list rendered without keys showed stale rows
+        expect: flag the missing React key
+        grader: string_match
+        match: [key prop, missing key, stable key, react key, unique key]
+
+      - id: console-log
+        incident: debug logging shipped to production
+        expect: flag the console.log
+        grader: string_match
+        match: [console.log, no-console, debug log]
+
+  - branch: eval/cross-tenant-lookup
+    about: a real production finding, rebuilt in this app
+    cases:
+      - id: cross-tenant-lookup
+        incident: an unscoped lookup could reach another tenant's data
+        expect: flag the missing ownership check
+        grader: string_match
+        match: [idor, authoriz, another user, other user, ownership, cross-tenant, tenant, unscoped, not scoped, access control]
+
+  - branch: eval/clean-change
+    about: a correct small change with a test, where silence is the right answer
+    cases:
+      - id: clean-change
+        incident: a reviewer that always finds something gets ignored
+        expect: no findings
+        grader: no_findings
