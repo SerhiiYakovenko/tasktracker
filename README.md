@@ -38,12 +38,12 @@ permissions:
 
 jobs:
   pr_agent_job:
-    if: ${{ github.event.sender.type != 'Bot' }}
+    if: ${{ github.event.sender.type != 'Bot' && (github.event_name != 'issue_comment' || contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) }}
     runs-on: ubuntu-latest
     name: Run PR Agent
     steps:
       - name: PR Agent
-        uses: the-pr-agent/pr-agent@v0.45.0     # pin a release; check for newer
+        uses: the-pr-agent/pr-agent@v0.45.0     # pins the wrapper only; the Docker image still floats
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      # auto-provided by Actions
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}          # OpenAI is the default provider
